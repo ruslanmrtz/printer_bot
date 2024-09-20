@@ -49,7 +49,7 @@ async def get_app(callback: Message, state: FSMContext, bot: Bot):
     await callback.message.answer(f'Город: <b>{selected_city}</b>\n'
                                   f'Цех: <b>{selected_workspace}</b>\n'
                                   f'Выберите продукты в приложении 👇',
-                                  reply_markup=await get_web_app())
+                                  reply_markup=await get_web_app(selected_city, selected_workspace))
 
 
 

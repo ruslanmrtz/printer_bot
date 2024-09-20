@@ -36,9 +36,10 @@ async def get_now_workshop_ikb() -> InlineKeyboardMarkup:
     return keyboard
 
 
-async def get_web_app():
+async def get_web_app(city: str, workspace: str):
     app = InlineKeyboardButton(text="Открыть выбор",
-                               web_app=WebAppInfo(url='http://localhost:8501/'))
+                               web_app=WebAppInfo(
+                                   url=f'https://printerbot.streamlit.app/?city={city}&workspace={workspace}'))
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[[app]]
