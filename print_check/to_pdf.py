@@ -46,6 +46,6 @@ def get_pdf(hours: int, name: str, user_id: int):
     pdf.cell(90, 10, text="Муртазин Р.Ш.", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
     # Сохраняем PDF-документ
-    pdf.output(f"print_check/check/check_{user_id}.pdf")
+    pdf.output(f"print_check/checks/check_{user_id}.pdf")
 
     print("PDF успешно создан!")

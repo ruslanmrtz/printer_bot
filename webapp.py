@@ -4,8 +4,8 @@ from print_check.printer import printer_check
 
 # Получаем параметры из URL
 query_params = st.query_params
-city = query_params.get("city", "").replace('%', ' ')
-workspace = query_params.get("workspace", "").replace('%', ' ')
+city = query_params.get("city", "").replace('%20', ' ')
+workspace = query_params.get("workspace", "").replace('%20', ' ')
 user_id = query_params.get("user_id", "")
 
 st.markdown(f'### Вы выбрали:')
