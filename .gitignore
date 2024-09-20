@@ -162,4 +162,4 @@ cython_debug/
 .idea/
 .jupyter/
 test.py
-config.py
+bot/config.py

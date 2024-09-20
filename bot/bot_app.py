@@ -7,7 +7,7 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
-import user_handlers
+from bot import user_handlers
 
 
 # Инициализируем логгер
