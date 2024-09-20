@@ -7,10 +7,10 @@ def get_pdf(hours: int, name: str, user_id: int):
     pdf.add_page()
 
     # Устанавливаем шрифты
-    pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf")  # Обычный
-    pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf")  # Жирный
-    pdf.add_font("DejaVu", "I", "fonts/DejaVuSerif-Italic.ttf")  # Курсив
-    pdf.add_font("DejaVu", "BI", "fonts/DejaVuSans-BoldOblique.ttf")  # Жирный курсив
+    pdf.add_font("DejaVu", "", "print_check/fonts/DejaVuSans.ttf")  # Обычный
+    pdf.add_font("DejaVu", "B", "print_check/fonts/DejaVuSans-Bold.ttf")  # Жирный
+    pdf.add_font("DejaVu", "I", "print_check/fonts/DejaVuSerif-Italic.ttf")  # Курсив
+    pdf.add_font("DejaVu", "BI", "print_check/fonts/DejaVuSans-BoldOblique.ttf")  # Жирный курсив
 
     # Рисуем прямоугольник (50 мм от левого края, 40 мм от верхнего края, ширина 90 мм, высота 65 мм)
     pdf.rect(50, 40, 90, 65)
@@ -46,6 +46,6 @@ def get_pdf(hours: int, name: str, user_id: int):
     pdf.cell(90, 10, text="Муртазин Р.Ш.", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
     # Сохраняем PDF-документ
-    pdf.output(f"check_{user_id}.pdf")
+    pdf.output(f"print_check/check/check_{user_id}.pdf")
 
     print("PDF успешно создан!")
