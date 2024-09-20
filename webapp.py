@@ -12,10 +12,11 @@ st.markdown(f'**Город:** {city}')
 st.markdown(f'**Цех:** {workspace}')
 
 # Поле для ввода поискового запроса
-option = st.selectbox(
-    "Выберите ингредиент",
-    ("", "Лук", "Сосиска", "Рис"),
-)
+options = ["", "Лук", "Сосиска", "Рис", "Морковь"]
+search_query = st.text_input("Поиск ингредиента")
+
+filtered_options = [opt for opt in options if search_query.lower() in opt.lower()]
+selected_option = st.selectbox("Выберите ингредиент", filtered_options)
 
 if st.button("Печатать", key="print_button"):
     if option:
