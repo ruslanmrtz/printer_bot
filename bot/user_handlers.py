@@ -9,6 +9,7 @@ from sqlalchemy import text
 from bot import bot_db
 from bot.keyboards import get_city_ikb, get_now_workshop_ikb, get_web_app
 
+from cities import get_workshop
 
 router = Router()
 
@@ -25,58 +26,57 @@ class FSMService(StatesGroup):
 
 @router.message(CommandStart())
 async def process_start_command(message: Message, state: FSMContext) -> None:
-    cities = ['Сургут', 'Нефтеюганск']
 
     await message.answer('Добро пожаловать!✨')
 
+    await state.set_state(FSMService.city)
+
     await message.answer('Для печати этикетки выберите город из списка ниже 👇',
-                         reply_markup=await get_city_ikb(cities))
-    await state.set_state(FSMService.workplace)
+                         reply_markup=await get_city_ikb())
+    await state.set_state(FSMService.app)
 
 
 @router.callback_query(F.data == 'city')
 async def get_city_select(callback: CallbackQuery, state: FSMContext):
-    cities = ['Сургут', 'Нефтеюганск']
 
-    await callback.message.edit_text('Выберите город из списка ниже 👇',
-                                           reply_markup=await get_city_ikb(cities))
-    await state.set_state(FSMService.workplace)
+    await callback.message.edit_text('Для печати этикетки выберите город из списка ниже 👇',
+                         reply_markup=await get_city_ikb())
+    await state.set_state(FSMService.app)
 
 
-@router.callback_query(StateFilter(FSMService.workplace))
+@router.callback_query(F.data == 'Сургут')
 async def get_login_aurhorize(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    l = ["Пролетарский просп., 10/3", "ул. Есенина, 4", "Набережный просп., 10/1"]
 
     selected_city = callback.data
     await state.update_data(city=selected_city)
 
     await callback.message.edit_text('Выберите цех 👇',
-                                     reply_markup=await get_now_workshop_ikb(l))
-    await state.set_state(FSMService.app)
-
-
-@router.callback_query(F.data == 'workshop')
-async def get_workshop_select(callback: CallbackQuery, state: FSMContext):
-    l = ["Пролетарский просп., 10/3", "ул. Есенина, 4", "Набережный просп., 10/1"]
-
-    await callback.message.edit_text('Выберите цех 👇',
-                                     reply_markup=await get_now_workshop_ikb(l))
+                                     reply_markup=await get_now_workshop_ikb())
     await state.set_state(FSMService.app)
 
 
 @router.callback_query(StateFilter(FSMService.app))
 async def get_app(callback: Message, state: FSMContext):
-    selected_workspace = callback.data
-    await state.update_data(workspace=selected_workspace)
-    user_data = await state.get_data()
-    selected_city = user_data.get('city')
-    selected_workspace = user_data.get('workspace')
 
-    await callback.message.edit_text(f'Город: <b>{selected_city}</b>\n'
-                                     f'Цех: <b>{selected_workspace}</b>\n'
-                                     f'Выберите продукты в приложении 👇',
-                                     reply_markup=await get_web_app(selected_city, selected_workspace,
-                                                                     callback.from_user.id))
+    # Для Сургута, т.к цеха есть
+    if callback.data in await get_workshop():
+        user_data = await state.get_data()
+        selected_city = user_data.get('city')
+        selected_workspace = callback.data
+
+        await callback.message.edit_text(f'Город: <b>{selected_city}</b>\n'
+                                         f'Цех: <b>{selected_workspace}</b>\n'
+                                         f'Выберите продукты в приложении 👇',
+                                         reply_markup=await get_web_app(selected_city, selected_workspace,
+                                                                        callback.from_user.id))
+    # Для любого другого города
+    else:
+        selected_city = callback.data
+        await state.update_data(city=selected_city)
+        await callback.message.edit_text(f'Город: <b>{selected_city}</b>\n'
+                                         f'Выберите продукты в приложении 👇',
+                                         reply_markup=await get_web_app(selected_city, '',
+                                                                        callback.from_user.id))
 
 
 async def check_expired_products(bot: Bot):
@@ -91,5 +91,5 @@ async def check_expired_products(bot: Bot):
             if now <= time_end <= now + timedelta(hours=1):
                 await bot.send_message(
                     user_id,
-                    f"⚠️ Продукт '{product_name}' испортится в {time_end.strftime('%Y-%m-%d %H:%M')}")
+                    f"⚠️ Продукт '{product_name}' испортится в {time_end.strftime('%H:%M %d-%m-%Y')}")
 

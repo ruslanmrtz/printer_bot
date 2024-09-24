@@ -26,15 +26,14 @@ if 'success_message' in st.session_state:
     del st.session_state.success_message  # Удаляем сообщение после отображения
 
 st.markdown(f'**Город:** {city}')
-st.markdown(f'**Цех:** {workspace}')
+if workspace:
+    st.markdown(f'**Цех:** {workspace}')
 
 # Поле для ввода поискового запроса
 df = db.get_product_names()
 options = sorted(([""] + df['Продукт'].to_list()))
-search_query = st.text_input("Поиск ингредиента")
 
-filtered_options = [opt for opt in options if search_query.lower() in opt.lower()]
-selected_option = st.selectbox("Выберите ингредиент", filtered_options)
+selected_option = st.selectbox("Выберите ингредиент", options)
 
 print_count = st.number_input('Количество этикеток', min_value=1, step=1, value=1)
 

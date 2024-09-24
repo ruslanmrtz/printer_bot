@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -34,12 +34,21 @@ def start_scheduler():
     scheduler.start()
 
 
+async def setup_bot_commands():
+    bot_commands = [
+        types.BotCommand(command="/start", description="Запустить бота")
+    ]
+    await bot.set_my_commands(bot_commands)
+
+
 # Функция конфигурирования и запуска бота
 async def main():
     async with bot_db.engine.begin() as conn:
         await conn.run_sync(bot_db.Base.metadata.create_all)  # Создание таблиц
 
     start_scheduler()
+
+    await setup_bot_commands()
 
     # Конфигурируем логирование
     logging.basicConfig(
