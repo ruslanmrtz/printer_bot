@@ -1,6 +1,6 @@
 from fpdf import FPDF, XPos, YPos
 import fitz
-from PIL import Image
+from PIL import Image, ImageEnhance
 from _datetime import datetime
 
 
@@ -14,7 +14,7 @@ def get_time(time_start, time_end):
 
 
 def get_pdf(hours: int, name: str, user_id: int,
-            time_start, time_end):
+            time_start, time_end, chef, show: bool = False):
 
     date_start, hours_start, date_end, hours_end = get_time(time_start, time_end)
 
@@ -22,7 +22,26 @@ def get_pdf(hours: int, name: str, user_id: int,
     pdf = FPDF()
     pdf.add_page()
 
+    # Увеличение контраста изображения
+    img_path = "print_check/sign/Имя.png"
+    img = Image.open(img_path)
+
+    # Увеличиваем контраст
+    enhancer = ImageEnhance.Contrast(img)
+    img = enhancer.enhance(5.0)  # Увеличение контраста
+
+    # Сохраняем временное изображение с улучшенным контрастом
+    enhanced_img_path = "print_check/sign/Имя_enhanced.png"
+    img.save(enhanced_img_path)
+
+    # Вставляем изображение подписи в PDF (сдвинут влево и увеличен в размере)
+    pdf.image(enhanced_img_path, x=48, y=83, w=15 * 2)
+
     pdf.set_line_width(0.85)
+
+    if show:
+        # Рисуем прямоугольник (увеличенные размеры)
+        pdf.rect(1, 1, 161, 110)
 
     # Устанавливаем шрифты
     pdf.add_font("DejaVu", "", "print_check/fonts/DejaVuSans.ttf")  # Обычный
@@ -30,46 +49,42 @@ def get_pdf(hours: int, name: str, user_id: int,
     pdf.add_font("DejaVu", "I", "print_check/fonts/DejaVuSerif-Italic.ttf")  # Курсив
     pdf.add_font("DejaVu", "BI", "print_check/fonts/DejaVuSans-BoldOblique.ttf")  # Жирный курсив
 
-    # Рисуем прямоугольник (50 мм от левого края, 40 мм от верхнего края, ширина 80 мм, высота 30 мм)
-    pdf.rect(50, 40, 81, 30)
-
     # Устанавливаем шрифт для заголовка (жирный курсив)
-    pdf.set_font("DejaVu", "BI", 14)
 
-    # Заголовок "ЗЕЛЕНЫЙ ЛУК" большими буквами по центру
-    pdf.set_xy(50, 40)
-    pdf.cell(80, 7, text=name, new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
+    pdf.set_font("DejaVu", "BI", 45)  # Увеличиваем размер шрифта в 2 раза
 
-    # Устанавливаем шрифт для основного текста
-    pdf.set_font("DejaVu", "", 12)
+    # Заголовок по центру
+    pdf.set_xy(0, 5)
+    if len(name.split()) == 2:
+        pdf.cell(161, 14, text=name.split()[0], new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
+        pdf.set_xy(0, 18)
+        pdf.cell(161, 14, text=name.split()[1], new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
+    else:
+        pdf.cell(161, 14, text=name, new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
 
-    # Пишем "Срок хранения" слева
-    pdf.set_xy(50, 45)
-    pdf.cell(110, 10, text=f"Срок хранения: {hours} ч. при t +2...+4", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
+    # Основной текст
+    pdf.set_font("DejaVu", "", 24)  # Увеличиваем размер шрифта в 2 раза
 
-    # Следующая строка для даты
-    pdf.set_xy(52, 50)  # Устанавливаем координаты для даты
-    pdf.cell(110, 10, text=f"Дата: {date_start}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
-    # Следующая строка для часа
-    pdf.set_xy(95, 50)  # Устанавливаем координаты для часа
-    pdf.cell(110, 10, text=f"Время: {hours_start}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
+    # "Срок хранения"
+    pdf.set_xy(1, 32)
+    pdf.cell(110 * 2, 10 * 2, text=f"Срок хранения: {hours} ч. при {'t +2...+4'}", new_x=XPos.RIGHT, new_y=YPos.TOP,
+             align="L")
 
-    # Следующая строка для даты
-    pdf.set_xy(54, 55)  # Устанавливаем координаты для даты
-    pdf.cell(110, 10, text=f"До: {date_end}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
+    # Дата и время
+    pdf.set_xy(2, 50)  # Увеличенные координаты
+    pdf.cell(110 * 2, 10 * 2, text=f"Дата: {date_start}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
-    # Следующая строка для часа
-    pdf.set_xy(98, 55)  # Устанавливаем координаты для часа
-    pdf.cell(110, 10, text=f"До: {hours_end}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
+    pdf.set_xy(2, 62)  # Увеличенные координаты
+    pdf.cell(110 * 2, 10 * 2, text=f"Время: {hours_start}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
+    pdf.set_xy(90, 50)  # Увеличенные координаты
+    pdf.cell(110 * 2, 10 * 2, text=f"До: {date_end}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
-    # Рисуем линию после строки с часом
-    # pdf.set_xy(50, 90)  # Устанавливаем координаты для линии
-    # pdf.line(50, 91, 140, 91)  # Рисуем линию от (50, 91) до (140, 91)
+    pdf.set_xy(90, 62)  # Увеличенные координаты
+    pdf.cell(110 * 2, 10 * 2, text=f"До: {hours_end}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
-    # Устанавливаем координаты для подписи
-    pdf.set_xy(52, 61)
-    pdf.cell(90, 10, text="Ст.повар _______ Муртазин Р.Ш.", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
+    pdf.set_xy(2, 87)  # Увеличенные координаты
+    pdf.cell(165, 14, text=f"Ст.повар:             {chef}", new_x=XPos.RIGHT, new_y=YPos.TOP, align="L")
 
     # Сохраняем PDF-документ
     pdf.output(f"print_check/checks/check_{user_id}.pdf")
@@ -104,6 +119,5 @@ def crop_and_display_pdf(pdf_path, left=0, top=0, right=0, bottom=0):
 
     # Обрезка изображения
     cropped_image = image.crop((left, top, right, bottom))
-
 
     return cropped_image

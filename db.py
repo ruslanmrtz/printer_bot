@@ -1,7 +1,9 @@
 import pandas as pd
-from sqlalchemy import Column, Integer, String, DateTime, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, DateTime, create_engine, ARRAY
+
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+from cities import get_df_cities
 
 # Определяем базовый класс для модели
 Base = declarative_base()
@@ -20,15 +22,34 @@ class Product(Base):
     time_end = Column(DateTime)
 
 
+# Определение модели Cities
+class Cities(Base):
+    __tablename__ = 'cities'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    city = Column(String, nullable=False)
+    workshop = Column(String)  # Адрес может быть None
+    chef = Column(String, nullable=False)
+    phones = Column(ARRAY(String), nullable=False)  # Используем ARRAY для хранения списка телефонов
+
+
 # Создание подключения к базе данных
 DATABASE_URI = 'postgresql://calls_owner:g0Z2omVMykvS@ep-calm-bar-a26gvvaw.eu-central-1.aws.neon.tech/products'
-engine = create_engine(DATABASE_URI, echo=True)
+engine = create_engine(DATABASE_URI)
 SessionLocal = sessionmaker(bind=engine)
 
 def create_table_products():
     """Создает таблицу в базе данных."""
     Base.metadata.create_all(engine)
     print('Таблица создана')
+
+
+def create_city():
+    df = get_df_cities()
+
+    with engine.begin() as conn:
+        df.to_sql('cities', con=conn, if_exists='replace', index=False, method='multi')
+    print('Список продуктов загружен в базу')
 
 
 def create_table_from_csv():
@@ -64,3 +85,22 @@ def get_product_names():
     """Получает имена продуктов из CSV."""
     df = pd.read_csv('products.csv')
     return df
+
+
+def get_chef(city, workshop = None):
+    if city:
+        with SessionLocal() as session:
+            query = session.query(Cities.chef, Cities.city, Cities.workshop)\
+                            .filter(Cities.city == city)
+
+            if workshop:
+                query = query.filter(Cities.workshop == workshop)
+
+            return query.first().chef
+
+    else:
+        return 'Ст. Повар'
+
+
+if __name__ == '__main__':
+    print(get_chef('Сургут', ))

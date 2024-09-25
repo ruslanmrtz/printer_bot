@@ -24,6 +24,6 @@ class Product(Base):
 
 # Создание подключения к базе данных
 DATABASE_URI = 'postgresql+asyncpg://calls_owner:g0Z2omVMykvS@ep-calm-bar-a26gvvaw.eu-central-1.aws.neon.tech/products'
-engine = create_async_engine(DATABASE_URI, echo=True)
+engine = create_async_engine(DATABASE_URI)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession)
 

@@ -8,6 +8,7 @@ import db
 # Проверка инициализации базы данных
 if 'db_initialized' not in st.session_state:
     db.create_table_products()
+    db.create_city()
     db.create_table_from_csv()
     st.session_state.db_initialized = True
 
@@ -16,6 +17,8 @@ query_params = st.query_params
 city = query_params.get("city", "").replace('%20', ' ')
 workspace = query_params.get("workspace", "").replace('%20', ' ')
 user_id = query_params.get("user_id", "")
+
+chef = db.get_chef(city, workspace)
 
 # Создаем пустое пространство для отображения PDF
 pdf_placeholder = st.empty()
@@ -53,7 +56,9 @@ if print_button:
         time_start = datetime.now()
         time_end = time_start + timedelta(hours=hours)
 
-        printer_check(hours, selected_option, user_id, time_start, time_end, print_count)
+        # get_pdf(hours, selected_option, user_id, time_start, time_end, chef)
+        #
+        # printer_check(hours, selected_option, user_id, time_start, time_end, print_count, chef)
 
         data = (user_id, city, workspace, selected_option, time_start, time_end, print_count)
         db.insert_data(data)
@@ -72,7 +77,7 @@ if selected_option:
         time_start = datetime.now()
         time_end = time_start + timedelta(hours=hours)
 
-        get_pdf(hours, selected_option, user_id, time_start, time_end)
+        get_pdf(hours, selected_option, user_id, time_start, time_end, chef, show=True)
 
         # Уведомление об успешной операции
         st.session_state.check_check = 'Проверить'
@@ -82,12 +87,12 @@ if selected_option:
 # Проверяем и отображаем PDF, если он уже был сгенерирован
 if 'pdf_generated' in st.session_state and st.session_state.pdf_generated:
     pdf_file = f'print_check/checks/check_{user_id}.pdf'
-    cropped_image = crop_and_display_pdf(pdf_file, 140, 110, 375, 200)
+    cropped_image = crop_and_display_pdf(pdf_file, left=2, top=2, right=460, bottom=315)
     pdf_placeholder.image(cropped_image)
 
 # Проверяем и отображаем PDF, если есть флаг check_check
 if 'check_check' in st.session_state:
     pdf_file = f'print_check/checks/check_{user_id}.pdf'
-    cropped_image = crop_and_display_pdf(pdf_file, 140, 110, 375, 200)
+    cropped_image = crop_and_display_pdf(pdf_file, left=2, top=2, right=460, bottom=315)
     pdf_placeholder.image(cropped_image)
     del st.session_state.check_check
