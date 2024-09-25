@@ -3,6 +3,7 @@ import fitz
 from PIL import Image, ImageEnhance
 from _datetime import datetime
 
+from cities import cities
 
 def get_time(time_start, time_end):
     date_start = datetime.strftime(time_start, "%d.%m.%Y")
@@ -14,7 +15,7 @@ def get_time(time_start, time_end):
 
 
 def get_pdf(hours: int, name: str, user_id: int,
-            time_start, time_end, chef, show: bool = False):
+            time_start, time_end, chef, city, workspace, show: bool = False):
 
     date_start, hours_start, date_end, hours_end = get_time(time_start, time_end)
 
@@ -22,8 +23,10 @@ def get_pdf(hours: int, name: str, user_id: int,
     pdf = FPDF()
     pdf.add_page()
 
-    # Увеличение контраста изображения
-    img_path = "print_check/sign/Имя.png"
+    # Подпись
+    sigh = workspace.replace('/', '') if city == 'Сургут' else city
+
+    img_path = f"print_check/sign/{sigh}.png"
     img = Image.open(img_path)
 
     # Увеличиваем контраст

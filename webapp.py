@@ -56,7 +56,8 @@ if print_button:
         time_start = datetime.now()
         time_end = time_start + timedelta(hours=hours)
 
-        get_pdf(hours, selected_option, user_id, time_start, time_end, chef)
+        get_pdf(hours, selected_option, user_id,
+                time_start, time_end, chef, city, workspace)
 
         # printer_check(print_count, user_id)
 
@@ -77,7 +78,8 @@ if selected_option:
         time_start = datetime.now()
         time_end = time_start + timedelta(hours=hours)
 
-        get_pdf(hours, selected_option, user_id, time_start, time_end, chef, show=True)
+        get_pdf(hours, selected_option, user_id, time_start,
+                time_end, chef,  city, workspace, show=True)
 
         # Уведомление об успешной операции
         st.session_state.check_check = 'Проверить'
