@@ -84,7 +84,7 @@ def insert_data(data: tuple):
 def get_product_names():
     """Получает имена продуктов из CSV."""
     df = pd.read_csv('products.csv')
-    return df
+    return df[['Продукт', 'Часы']]
 
 
 def get_chef(city, workshop = None):

@@ -67,7 +67,7 @@ def get_pdf(hours: int, name: str, user_id: int,
 
     # "Срок хранения"
     pdf.set_xy(1, 32)
-    pdf.cell(110 * 2, 10 * 2, text=f"Срок хранения: {hours} ч. при {'t +2...+4'}", new_x=XPos.RIGHT, new_y=YPos.TOP,
+    pdf.cell(110 * 2, 10 * 2, text=f"Срок хранения: {hours} ч. t {'от 0 до +6'}", new_x=XPos.RIGHT, new_y=YPos.TOP,
              align="L")
 
     # Дата и время

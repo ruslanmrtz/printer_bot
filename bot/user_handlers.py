@@ -80,16 +80,40 @@ async def get_app(callback: Message, state: FSMContext):
 
 
 async def check_expired_products(bot: Bot):
-    print('Проверка')
+    print('Проверка продуктов на истечение срока годности')
+
+    # Открываем сессию для работы с базой данных
     async with bot_db.AsyncSessionLocal() as session:
-        result = await session.execute(text("SELECT product_name, user_id, time_end FROM products"))
+        # Выполняем SQL-запрос для получения списка продуктов
+        result = await session.execute(text("SELECT id, city, workshop, product_name, user_id, time_end FROM products"))
         products = result.fetchall()
 
+        # Получаем текущее время
         now = datetime.now()
 
-        for product_name, user_id, time_end in products:
+        # Проходим по списку продуктов
+        for product_id, city, workshop, product_name, user_id, time_end in products:
+            # Если продукт истекает в течение часа
             if now <= time_end <= now + timedelta(hours=1):
-                await bot.send_message(
-                    user_id,
-                    f"⚠️ Продукт '{product_name}' испортится в {time_end.strftime('%H:%M %d-%m-%Y')}")
+                # Отправляем пользователю уведомление о скором истечении срока годности
+
+                if workshop:
+                    await bot.send_message(
+                        user_id,
+                        f"⚠️ <b>Город</b>: {city} \n"
+                        f"⚠️ <b>Цех</b>: {workshop}\n"
+                        f"⚠️ <b>Продукт</b>: '{product_name}'\n испортится в {time_end.strftime('%H:%M %d-%m-%Y')}"
+                    )
+                else:
+                    await bot.send_message(
+                        user_id,
+                        f"⚠️ <b>Город</b>: {city} \n"
+                        f"⚠️ <b>Продукт</b>: '{product_name}'\n испортится в {time_end.strftime('%H:%M %d-%m-%Y')}"
+                    )
+
+                # Удаляем запись о продукте по id из базы данных
+                await session.execute(text("DELETE FROM products WHERE id = :id"), {'id': product_id})
+
+        # Сохраняем изменения в базе данных
+        await session.commit()
 

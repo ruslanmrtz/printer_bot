@@ -1,8 +1,8 @@
 import streamlit as st
 from datetime import datetime, timedelta
 
-from print_check.to_pdf import crop_and_display_pdf
-from print_check.printer import printer_check, get_pdf
+from print_check.to_pdf import crop_and_display_pdf, get_pdf
+from print_check.printer import printer_check
 import db
 
 # Проверка инициализации базы данных
@@ -56,9 +56,9 @@ if print_button:
         time_start = datetime.now()
         time_end = time_start + timedelta(hours=hours)
 
-        # get_pdf(hours, selected_option, user_id, time_start, time_end, chef)
-        #
-        # printer_check(hours, selected_option, user_id, time_start, time_end, print_count, chef)
+        get_pdf(hours, selected_option, user_id, time_start, time_end, chef)
+
+        # printer_check(print_count, user_id)
 
         data = (user_id, city, workspace, selected_option, time_start, time_end, print_count)
         db.insert_data(data)
@@ -88,11 +88,11 @@ if selected_option:
 if 'pdf_generated' in st.session_state and st.session_state.pdf_generated:
     pdf_file = f'print_check/checks/check_{user_id}.pdf'
     cropped_image = crop_and_display_pdf(pdf_file, left=2, top=2, right=460, bottom=315)
-    pdf_placeholder.image(cropped_image)
+    pdf_placeholder.image(cropped_image, width=200)
 
 # Проверяем и отображаем PDF, если есть флаг check_check
 if 'check_check' in st.session_state:
     pdf_file = f'print_check/checks/check_{user_id}.pdf'
     cropped_image = crop_and_display_pdf(pdf_file, left=2, top=2, right=460, bottom=315)
-    pdf_placeholder.image(cropped_image)
+    pdf_placeholder.image(cropped_image, width=200)
     del st.session_state.check_check

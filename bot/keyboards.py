@@ -38,7 +38,7 @@ async def get_web_app(city: str, workspace: str, id: int):
     app = (
         InlineKeyboardButton(text="Открыть выбор",
                              web_app=WebAppInfo(
-                              url=f'https://a6d4-66-151-42-148.ngrok-free.app/?city={city}&workspace={workspace}&user_id={id}')))
+                              url=f'https://bf89-2a01-540-a68c-4700-e41c-46ca-419a-9812.ngrok-free.app/?city={city}&workspace={workspace}&user_id={id}')))
 
     cancel_city = InlineKeyboardButton(text="К выбору города 🔙",
                                             callback_data=f'city')
