@@ -163,3 +163,8 @@ cython_debug/
 .jupyter/
 test.py
 bot/config.py
+
+bot/bot_reg.py
+bot/users.db
+
+

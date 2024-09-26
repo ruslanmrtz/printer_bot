@@ -78,7 +78,6 @@ async def get_app(callback: Message, state: FSMContext):
                                          reply_markup=await get_web_app(selected_city, '',
                                                                         callback.from_user.id))
 
-
 async def check_expired_products(bot: Bot):
     print('Проверка продуктов на истечение срока годности')
 

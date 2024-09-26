@@ -59,7 +59,7 @@ if print_button:
         get_pdf(hours, selected_option, user_id,
                 time_start, time_end, chef, city, workspace)
 
-        # printer_check(print_count, user_id)
+        printer_check(print_count, user_id)
 
         data = (user_id, city, workspace, selected_option, time_start, time_end, print_count)
         db.insert_data(data)

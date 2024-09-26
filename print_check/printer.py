@@ -11,10 +11,10 @@ def printer_check(count_print: int = 1, user_id: int = 0):
 
     printer_ip = '192.168.0.65'
     printer_port = 9100
-    for i in range(count_print):
-        # Подключаемся к принтеру и отправляем ZPL
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((printer_ip, printer_port))
+    # Подключаемся к принтеру и отправляем ZPL
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((printer_ip, printer_port))
+        for i in range(count_print):
             sock.sendall(zpl.encode('utf-8'))
 
 

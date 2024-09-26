@@ -28,6 +28,8 @@ dp = Dispatcher(storage=storage)
 
 # Настраиваем планировщик
 scheduler = AsyncIOScheduler()
+
+
 def start_scheduler():
     # Добавляем задание, которое будет выполняться каждые 60 секунд
     scheduler.add_job(user_handlers.check_expired_products, 'interval', seconds=60, args=[bot])

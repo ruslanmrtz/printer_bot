@@ -58,18 +58,18 @@ def get_pdf(hours: int, name: str, user_id: int,
 
     # Заголовок по центру
     pdf.set_xy(0, 5)
-    if len(name.split()) == 2:
-        pdf.cell(161, 14, text=name.split()[0], new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
-        pdf.set_xy(0, 18)
-        pdf.cell(161, 14, text=name.split()[1], new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
-    else:
-        pdf.cell(161, 14, text=name, new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
+
+    product_splitted = split_product_name(name)
+
+    for i, line in enumerate(product_splitted):
+        pdf.set_xy(0, 5 + i*11)
+        pdf.cell(161, 14, text=line, new_x=XPos.RIGHT, new_y=YPos.TOP, align="C")
 
     # Основной текст
     pdf.set_font("DejaVu", "", 24)  # Увеличиваем размер шрифта в 2 раза
 
     # "Срок хранения"
-    pdf.set_xy(1, 32)
+    pdf.set_xy(1, 35)
     pdf.cell(110 * 2, 10 * 2, text=f"Срок хранения: {hours} ч. t {'от 0 до +6'}", new_x=XPos.RIGHT, new_y=YPos.TOP,
              align="L")
 
@@ -93,6 +93,27 @@ def get_pdf(hours: int, name: str, user_id: int,
     pdf.output(f"print_check/checks/check_{user_id}.pdf")
 
     print("PDF успешно создан!")
+
+
+def split_product_name(product, max_len=14):
+    words = product.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        if len(current_line) + len(word) + 1 <= max_len:
+            if current_line:
+                current_line += " " + word
+            else:
+                current_line = word
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    if current_line:
+        lines.append(current_line)
+
+    return lines
 
 
 def crop_and_display_pdf(pdf_path, left=0, top=0, right=0, bottom=0):
@@ -124,3 +145,8 @@ def crop_and_display_pdf(pdf_path, left=0, top=0, right=0, bottom=0):
     cropped_image = image.crop((left, top, right, bottom))
 
     return cropped_image
+
+
+if __name__ == '__main__':
+    print(get_pdf())
+
