@@ -87,6 +87,7 @@ def get_product_names():
     return df[['Продукт', 'Часы']]
 
 
+
 def get_chef(city, workshop = None):
     if city:
         with SessionLocal() as session:

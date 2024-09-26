@@ -113,33 +113,30 @@ async def check_expired_products(bot: Bot):
     # Открываем сессию для работы с базой данных
     async with bot_db.AsyncSessionLocal() as session:
         # Выполняем SQL-запрос для получения списка продуктов
-        result = await session.execute(text("SELECT id, city, workshop, product_name, user_id, time_end FROM products"))
+        result = await session.execute(text("SELECT id, city, workshop, product_name, time_end FROM products"))
         products = result.fetchall()
 
         # Получаем текущее время
         now = datetime.now()
 
         # Проходим по списку продуктов
-        for product_id, city, workshop, product_name, user_id, time_end in products:
+        for product_id, city, workshop, product_name, time_end in products:
             # Если продукт истекает в течение часа
             if now <= time_end <= now + timedelta(hours=1):
-                # Отправляем пользователю уведомление о скором истечении срока годности
+                city_phones = await bot_db.get_city_phones(city, workshop)
 
-                if workshop:
-                    await bot.send_message(
-                        user_id,
-                        f"⚠️ <b>Город</b>: {city} \n"
-                        f"⚠️ <b>Цех</b>: {workshop}\n"
-                        f"⚠️ <b>Продукт</b>: '{product_name}'\n испортится в {time_end.strftime('%H:%M %d-%m-%Y')}"
-                    )
-                else:
-                    await bot.send_message(
-                        user_id,
-                        f"⚠️ <b>Город</b>: {city} \n"
-                        f"⚠️ <b>Продукт</b>: '{product_name}'\n испортится в {time_end.strftime('%H:%M %d-%m-%Y')}"
-                    )
+                if city_phones:
+                    # Проходим по всем телефонам
+                    for phone in city_phones:
+                        # Находим chat_id пользователя по номеру телефона
+                        user_id = await bot_db.get_user_id_by_phone(phone)
+                        if user_id:
+                            message_text = f"⚠️ <b>Город</b>: {city} \n"
+                            message_text += f"⚠️ <b>Цех</b>: {workshop}\n" if workshop else ""
+                            message_text += f'⚠️ <b>Продукт</b>: "{product_name}"\n испортится в {time_end.strftime('%H:%M %d-%m-%Y')}'
+                            await bot.send_message(user_id, message_text)
 
-                # Удаляем запись о продукте по id из базы данных
+                # Удаляем продукт из базы данных
                 await session.execute(text("DELETE FROM products WHERE id = :id"), {'id': product_id})
 
         # Сохраняем изменения в базе данных
