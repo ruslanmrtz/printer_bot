@@ -1,20 +1,16 @@
-import pandas as pd
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Определяем базовый класс для модели
 Base = declarative_base()
 
-
-# Определяем модель таблицы
+# Определяем модель таблицы Products
 class Product(Base):
     __tablename__ = 'products'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String)  # изменил на String, чтобы соответствовать твоему коду
+    user_id = Column(String)  # Изменил на String, чтобы соответствовать твоему коду
     city = Column(String)
     workshop = Column(String)
     product_name = Column(String)
@@ -22,8 +18,42 @@ class Product(Base):
     time_end = Column(DateTime)
 
 
+# Определяем модель таблицы Users
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    phone = Column(String, unique=True, nullable=False)
+    user_id = Column(String, unique=True, nullable=False)
+
+
 # Создание подключения к базе данных
 DATABASE_URI = 'postgresql+asyncpg://calls_owner:g0Z2omVMykvS@ep-calm-bar-a26gvvaw.eu-central-1.aws.neon.tech/products'
 engine = create_async_engine(DATABASE_URI)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession)
 
+
+# Функция для добавления пользователя в базу данных
+async def add_user(phone, user_id):
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(
+                text("INSERT INTO users (phone, user_id) VALUES (:phone, :user_id) "
+                "ON CONFLICT (phone) DO NOTHING"),
+                {'phone': phone, 'user_id': user_id}
+            )
+        await session.commit()
+
+
+# Функция для получения всех пользователей
+async def get_all_users():
+    async with AsyncSessionLocal() as session:
+        result = await session.execute("SELECT * FROM users")
+        users = result.fetchall()
+        return users
+
+
+# Функция для создания таблиц
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

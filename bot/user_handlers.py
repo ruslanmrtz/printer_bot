@@ -1,4 +1,4 @@
-from aiogram import Router, Bot, F
+from aiogram import Router, Bot, F, types
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
@@ -19,6 +19,7 @@ class FSMService(StatesGroup):
     # перечисляя возможные состояния, в которых будет находиться
     # бот в разные моменты взаимодействия с пользователем
 
+    person = State()
     city = State()      # Выбор города
     workplace = State()  # Выбор цеха
     app = State()
@@ -29,11 +30,39 @@ async def process_start_command(message: Message, state: FSMContext) -> None:
 
     await message.answer('Добро пожаловать!✨')
 
-    await state.set_state(FSMService.city)
+    button = types.KeyboardButton(text="Отправить номер телефона 📱", request_contact=True)
+    keyboard = types.ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True, one_time_keyboard=True)
 
-    await message.answer('Для печати этикетки выберите город из списка ниже 👇',
-                         reply_markup=await get_city_ikb())
-    await state.set_state(FSMService.app)
+    reg_msg = await message.answer('Для регистрации предлагаю вам отправить свой номер, нажав на кнопку.',
+                         reply_markup=keyboard)
+    reg_id = reg_msg.message_id
+
+    await state.update_data(reg_id=reg_id)
+
+    await state.set_state(FSMService.person)
+
+
+@router.message(StateFilter(FSMService.person))
+async def contacts(msg: types.Message, bot: Bot, state: FSMContext):
+    if msg.contact:
+        user_id = msg.from_user.id
+        phone_number = msg.contact.phone_number
+        data = await state.get_data()
+        reg_id = data.get('reg_id')
+
+        # Сохраняем данные в базу
+        await bot_db.add_user(str(phone_number), str(user_id))
+
+        await bot.delete_message(chat_id=user_id, message_id=msg.message_id)
+        await bot.delete_message(chat_id=user_id, message_id=reg_id)
+
+        await msg.answer('Для печати этикетки выберите город из списка ниже 👇',
+                                         reply_markup=await get_city_ikb())
+
+        await state.set_state(FSMService.app)
+
+    else:
+        await msg.answer("Пожалуйста, отправьте ваш номер телефона, используя кнопку.")
 
 
 @router.callback_query(F.data == 'city')
