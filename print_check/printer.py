@@ -1,5 +1,4 @@
 from print_check.to_pdf import crop_and_display_pdf
-from datetime import datetime
 import socket
 
 
