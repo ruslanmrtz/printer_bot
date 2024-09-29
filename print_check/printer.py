@@ -8,7 +8,7 @@ def printer_check(count_print: int = 1, user_id: int = 0):
 
     zpl = image_to_zpl(image)
 
-    printer_ip = '192.168.0.65'
+    printer_ip = '217.115.178.167'
     printer_port = 9100
     # Подключаемся к принтеру и отправляем ZPL
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

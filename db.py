@@ -11,7 +11,7 @@ Base = declarative_base()
 
 # Определяем модель таблицы
 class Product(Base):
-    __tablename__ = 'products'
+    __tablename__ = 'printer_products'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String)  # изменил на String, чтобы соответствовать твоему коду
@@ -24,7 +24,7 @@ class Product(Base):
 
 # Определение модели Cities
 class Cities(Base):
-    __tablename__ = 'cities'
+    __tablename__ = 'printer_cities'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     city = Column(String, nullable=False)
@@ -34,7 +34,7 @@ class Cities(Base):
 
 
 # Создание подключения к базе данных
-DATABASE_URI = 'postgresql://calls_owner:g0Z2omVMykvS@ep-calm-bar-a26gvvaw.eu-central-1.aws.neon.tech/products'
+DATABASE_URI = 'mysql+pymysql://root:nLplQtuG@82.202.177.215/samurai_db'
 engine = create_engine(DATABASE_URI)
 SessionLocal = sessionmaker(bind=engine)
 
@@ -56,7 +56,7 @@ def create_table_from_csv():
     """Загружает список продуктов из CSV в базу данных."""
     df = pd.read_csv('products.csv')
     with engine.begin() as conn:
-        df.to_sql('products_list', con=conn, if_exists='replace', index=False, method='multi')
+        df.to_sql('printer_products_list', con=conn, if_exists='replace', index=False, method='multi')
     print('Список продуктов загружен в базу')
 
 
